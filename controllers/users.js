@@ -3,8 +3,10 @@ const lowdb = require("lowdb");
 const FileSync = require("lowdb/adapters/FileSync");
 const adapter = new FileSync("./data/db.json");
 const db = lowdb(adapter);
+var cors = require("cors");
 // Login controller
-function login(req, res) {
+exports.login = (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
   const email = req.body.email;
   const password = req.body.password;
   // get user from database
@@ -21,15 +23,16 @@ function login(req, res) {
       res.json({ error: "Wrong password" });
     }
   }
-}
-function usersList(req, res) {
+};
+exports.usersList = (req, res) => {
   res.json(db.get("users").value());
-}
-function registerController(req, res) {
+};
+exports.registerController = (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
   db.get("users").push(req.body).write();
   res.json(db.get("users").value());
-}
-function addfavourites(req, res) {
+};
+exports.addfavourites = (req, res) => {
   const title = req.body.title;
   const userEmail = req.body.auth;
   db
@@ -43,8 +46,4 @@ function addfavourites(req, res) {
     .write();
 
   res.json(db.get("users").find({ email: userEmail }).value());
-}
-exports.addfavourites = addfavourites;
-exports.registerController = registerController;
-exports.usersList = usersList;
-exports.login = login;
+};

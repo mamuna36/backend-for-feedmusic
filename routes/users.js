@@ -1,10 +1,12 @@
 const express = require("express");
 // import lowdb
 const lowdb = require("lowdb");
-const { login } = require("../controllers/users");
-const { usersList } = require("../controllers/users");
-const { registerController } = require("../controllers/users");
-const { addfavourites } = require("../controllers/users");
+const {
+  login,
+  usersList,
+  registerController,
+  addfavourites,
+} = require("../controllers/users");
 // import file interface, to read and write from local files
 const FileSync = require("lowdb/adapters/FileSync");
 // initialize (mock) Database
