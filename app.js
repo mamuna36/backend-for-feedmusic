@@ -32,6 +32,11 @@ app.get("/", (req, res) => {
 app.use(function (req, res, next) {
   next(createError(404));
 });
+// error logger
+app.use(function (err, req, res, next) {
+  console.error(err.message);
+  next(err);
+});
 
 // error handler
 app.use(function (err, req, res, next) {

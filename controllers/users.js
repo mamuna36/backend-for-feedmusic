@@ -6,7 +6,6 @@ const db = lowdb(adapter);
 var cors = require("cors");
 // Login controller
 exports.login = (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   const email = req.body.email;
   const password = req.body.password;
   // get user from database
@@ -28,7 +27,6 @@ exports.usersList = (req, res) => {
   res.json(db.get("users").value());
 };
 exports.registerController = (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   db.get("users").push(req.body).write();
   res.json(db.get("users").value());
 };
