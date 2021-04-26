@@ -1,15 +1,86 @@
-// initialize (mock) Database
-const lowdb = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
-const adapter = new FileSync("./data/db.json");
-const db = lowdb(adapter);
-var cors = require("cors");
+// // initialize (mock) Database
+// const lowdb = require("lowdb");
+// const FileSync = require("lowdb/adapters/FileSync");
+// const adapter = new FileSync("./data/db.json");
+// const db = lowdb(adapter);
+// var cors = require("cors");
+const mongodb = require("mongodb");
+// get all records
+exports.getRecords = (req, res, next) => {
+  // access db from global object   // select all records
+  req.app.locals.db
+    .collection("records")
+    .find()
+    .toArray((err, docs) => {
+      res.json(docs);
+    });
+};
+
+// get specific record
+exports.getRecord = (req, res, next) => {
+  const { id } = req.params;
+  req.app.locals.db
+    .collection("records")
+    .findOne({ _id: new mongodb.ObjectID(id) }, (err, result) => {
+      res.json(result);
+    });
+};
+
+// delete one record
+exports.deleteRecord = (req, res, next) => {
+  const { id } = req.params;
+  req.app.locals.db
+    .collection("records")
+    .deleteOne({ _id: new mongodb.ObjectID(id) }, (err, result) => {
+      if (err) console.error(err);
+      console.log("del result", result);
+      res.json({ deleted: result.deletedCount });
+    });
+};
+
+// update one User
+exports.updateRecord = (req, res, next) => {
+  const { id } = req.params;
+  req.app.locals.db.collection("records").updateOne(
+    // filter
+    { _id: new mongodb.ObjectID(id) },
+    // new data
+    {
+      $set: req.body,
+    },
+    // callback function
+    (err, entry) => {
+      res.json(entry);
+    }
+  );
+};
+// exports.registerController = (req, res) => {
+//   console.log(req.body);
+//   const user = req.body;
+//   req.app.locals.db.collection("users").insertOne((user, entry) => {
+//     res.json(entry);
+//   });
+//   res.json(req.app.locals.db.collection("users").value());
+// };
+
+// register new user
+exports.registerController = (req, res, next) => {
+  const user = req.body;
+  // access db from global object
+  req.app.locals.db.collection("users").insertOne(user, (err, entry) => {
+    res.json(entry);
+  });
+};
+
 // Login controller
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   // get user from database
-  const foundUser = db.get("users").find({ email: email }).value();
+  const foundUser = await req.app.locals.db
+    .collection("users")
+    .findOne({ email: email });
+  console.log(foundUser);
   if (!foundUser) {
     res.json({ error: "User not found" });
   } else {
@@ -23,25 +94,28 @@ exports.login = (req, res) => {
     }
   }
 };
-exports.usersList = (req, res) => {
-  res.json(db.get("users").value());
+// get list of all registered users
+exports.usersList = (req, res, next) => {
+  // access db from global object   // select all records
+  req.app.locals.db
+    .collection("users")
+    .find()
+    // callback is like await
+    .toArray((err, docs) => {
+      res.json(docs);
+    });
 };
-exports.registerController = (req, res) => {
-  db.get("users").push(req.body).write();
-  res.json(db.get("users").value());
-};
-exports.addfavourites = (req, res) => {
+// use updateOne for this and add the new favourites
+exports.addfavourites = async (req, res) => {
   const title = req.body.title;
   const userEmail = req.body.auth;
-  db
-    // get users collection
-    .get("users")
+  const user = await req.app.locals.db
+    .collection("users")
     // get specific user
-    .find({ email: userEmail })
-    // modify user data
-    .assign({ favourites: [title] })
-    // write to DB
-    .write();
+    .updateOne(
+      { email: userEmail },
+      { $push: { favourites: { $each: req.body.favourite } } }
+    );
 
-  res.json(db.get("users").find({ email: userEmail }).value());
+  res.json(user);
 };
