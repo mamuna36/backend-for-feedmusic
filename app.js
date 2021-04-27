@@ -5,6 +5,7 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
 const { MongoClient } = require("mongodb");
+require("dotenv").config();
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -16,10 +17,14 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 app.use(cors());
 app.use(logger("dev"));
+//ENV variable
+const dBURL = process.env.DB_URL;
+const dBPassword = process.env.DB_PASSWORD;
+const dBUser = process.env.DB_USER;
+
 // Connect to mongodb
 async function connectDB() {
-  const url =
-    "mongodb+srv://dbUser:BaeDW7JEpn2eRq6I@cluster0.qykt1.mongodb.net/feedmusic?retryWrites=true&w=majority";
+  const url = `mongodb+srv://${dBUser}:${dBPassword}@${dBURL}`;
   const client = new MongoClient(url);
 
   try {
